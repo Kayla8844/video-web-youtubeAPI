@@ -1,19 +1,10 @@
-# video-web-practice
+# 用 youtube API 做影音網站
 
-## Project setup
-```
-npm install
-```
+到 google apis console 申請⼀個api⾦鑰
+https://console.developers.google.com/apis/dashboard(https://console.developers.google.com/apis/dashboard)
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+串接 youtube videos api 
+https://developers.google.com/youtube/v3/docs/videos/list(https://developers.google.com/youtube/v3/docs/videos/list)
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+播放頁放此連結
+https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8(https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8 )
