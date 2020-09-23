@@ -1,10 +1,10 @@
 # 用 youtube API 做影音網站
 
-1. 到 google apis console 申請⼀個api⾦鑰
+1. 到 google apis console 申請⼀個api⾦鑰<br>
 https://console.developers.google.com/apis/dashboard
 
-1. 串接 youtube videos api
+1. 串接 youtube videos api<br>
 https://developers.google.com/youtube/v3/docs/videos/list
 
-1. 播放頁放此連結
+1. 播放頁放此連結<br>
 https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8
