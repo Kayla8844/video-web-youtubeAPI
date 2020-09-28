@@ -2,12 +2,20 @@
 
 [demo](https://kayla8844.github.io/video-web-youtube-api-output/)
 
+## 提問
+* nextPageToken<br>
+https://drive.google.com/file/d/13b3zgL88kexDKNG3XmU5NvKfi6Mr1Fok/view?usp=sharing
+
+---
+
 1. 到 google apis console 申請⼀個api⾦鑰<br>
 https://console.developers.google.com/apis/dashboard
 
 1. 串接 youtube videos api<br>
 https://developers.google.com/youtube/v3/docs/videos/list
 
+
+---
 
 ## 分頁
 每按下一頁就取得新的一批 12 筆資料
@@ -23,7 +31,6 @@ https://developers.google.com/youtube/v3/docs/videos/list
   9  96~100
 ```
 
-<br>
 <br>
 
 1. 設定從哪筆開始擷取
@@ -44,7 +51,6 @@ this.pagePlaylist = this.videos.slice(this.nowPlayStartIndex, this.nowPlayStartI
 ```
 
 <br>
-<br>
 
 如果已經有下一頁，就不用向後端取得新的一批 12 筆資料
 
@@ -60,7 +66,5 @@ if(this.videos.length > this.pages.currentPage*this.pages.perPage_num){
 ```
             
 
-## 提問
-* nextPageToken<br>
-https://drive.google.com/file/d/13b3zgL88kexDKNG3XmU5NvKfi6Mr1Fok/view?usp=sharing
+
 
