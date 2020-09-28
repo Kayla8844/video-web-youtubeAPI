@@ -1,13 +1,20 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../components/Home.vue'
 
 Vue.use(VueRouter)
 
 const routes = [{
+        path: '*',
+        redirect: '/',
+    },
+    {
         path: '/',
         name: 'Home',
-        component: Home
+        meta: {
+            keepAlive: true // 需要缓存
+        },
+        component: () =>
+            import ('../components/Home.vue')
     },
     {
         path: '/storage',
@@ -30,6 +37,7 @@ const routes = [{
 ]
 
 const router = new VueRouter({
+    mode: 'hash',
     routes
 })
 

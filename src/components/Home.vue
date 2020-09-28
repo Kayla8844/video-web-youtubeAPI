@@ -24,22 +24,28 @@
                 @click="gotoPage(1)">
                 First
             </a>
-            <a class="page_btn previous_page">&lt;&lt;</a>
+            <a 
+                class="page_btn previous_page"
+                @click="previouspage()">
+                &lt;&lt;
+            </a>
             <a
                 class="page_btn gotopage"
-                v-for="num in temp_total_page" 
-                :key="num"
-                @click="gotoPage(num)">
-                {{ num }}
+                v-for="page in pages.totalPage" 
+                :class="{'active': page == pages.currentPage}"
+                :key="page"
+                @click="gotoPage(page)">
+                {{ page }}
             </a>
             <a 
                 class="page_btn nextPage" 
-                :class="{disabled: this.temp_total_page == 9}" @click="gotoNextpage(nextPageToken)">
+                :class="{'disabled': this.pages.totalPage == 9}" 
+                @click="gotoNextpage(pages.nextPageToken)">
                 >>
             </a>
             <a 
                 class="page_btn lastPage" 
-                @click="gotoPage(temp_total_page)">
+                @click="gotoPage(pages.totalPage)">
                 Last
             </a>
         </div>
@@ -54,17 +60,25 @@ export default {
         return {
             videos:[],  // 所有影片
             pagePlaylist: [],  // 當下頁數撥放清單
-            playStartIndex: 0,
+            nowPlayStartIndex: 0,
+            totalResults: 100,
             
-            currentPage: 1,
-            nextPageToken: "",
-            perPage_num: 12,
-            total_page: 0,
+            pages:{
+                currentPage: 1,
+                nextPageToken: "",
+                perPage_num: 12,
 
-            temp_total_page: 1, 
-            // 按了下一頁才會產生新的總頁數 第 12/1 頁, 24/2,36/3..
+                totalPage: 1, 
+                // 按了下一頁才會產生新的總頁數 第 12/1 頁, 24/2,36/3..
+            }
         }
     },
+
+    created() {
+        console.log("created")
+        this.getFirstVideos();
+    },
+
     computed: {
     },
 
@@ -72,118 +86,18 @@ export default {
         gotoPlay(id){
             this.$router.push(`/play/${id}`)
         },
-        gotoPage(page){
-            this.currentPage = page;
-            console.log("currentPage: " + this.currentPage)
+
+        slicePagelist(){
+            // 每頁取 12 筆
+            this.pagePlaylist = this.videos.slice(this.nowPlayStartIndex, this.nowPlayStartIndex+12)
+        },
+
+        getPlaylist(playlist){
+            // 取回來的資料存到 playlist 傳入
+            // 制定格式
+            // 裝進總數陣列裡
             
-            // 取得當下第幾頁  (12*0,12*1)
-            this.pagePlaylist = this.videos.slice(this.perPage_num*(this.currentPage-1), this.perPage_num*this.currentPage)
-        },
-
-        gotoNextpage(nextPageToken){
-            if(this.temp_total_page == 9){
-                let nextPageBtn = document.querySelector(".nextPage");
-                return
-            }
-
-            this.currentPage ++;
-            console.log(this.currentPage)
-
-            this.playStartIndex +=12;
-
-            let nextPageApi=`https://www.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&chart=mostPopular&maxResults=12&pageToken=${nextPageToken}&regionCode=TW&key=AIzaSyAEHw6lAxMOQ4YcogbbAkeWza_hxARrk4k`
-
-            this.$http.get(nextPageApi).then((res)=>{
-                // console.log(res)
-
-                // 按了下一頁才會產生新的總頁數 第 12/1 頁, 24/2,36/3..
-                this.temp_total_page = this.currentPage
-                console.log(this.temp_total_page)
-
-                let playlist = res.data.items;
-
-                playlist.forEach((el,i,arr) => {
-                    let id = el.id;
-                    let img = el.snippet.thumbnails.high.url;
-                    let title = el.snippet.title;
-                    let description = el.snippet.description;
-                    let duration = el.contentDetails.duration;
-
-                    // 轉時間格式
-                    let formatDuration = this.durationHandler(duration);
-
-                    let video = {
-                        id,
-                        img,
-                        title,
-                        cut_title: title.substr(1,10)+"...",
-                        description: description.substr(1,20)+"...",
-                        formatDuration
-                    }
-
-                    this.videos.push(video)
-                    
-                    // 如: 第二頁: slice(12,23)
-                    this.pagePlaylist = this.videos.slice(this.playStartIndex,this.playStartIndex+12)
-
-                    this.nextPageToken = res.data.nextPageToken;
-                });
-                // console.log(this.playStartIndex)
-                console.log(this.pagePlaylist)
-            })
-        },
-
-        getVideos(){
-            const api = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&chart=mostPopular&maxResults=12&regionCode=TW&key=AIzaSyAEHw6lAxMOQ4YcogbbAkeWza_hxARrk4k'
-
-            this.$http.get(api).then((res)=>{
-                console.log(res);
-
-                let playlist = res.data.items;
-                let pageInfo = res.data.pageInfo;
-
-                this.nextPageToken = res.data.nextPageToken;
-                this.total_page = Math.ceil(pageInfo.totalResults / pageInfo.resultsPerPage)
-
-                // console.log("total_page: "+this.total_page)
-
-                this.currentPage = 1
-
-                playlist.forEach((el,i,arr) => {
-                    let id = el.id;
-                    let img = el.snippet.thumbnails.high.url;
-                    let title = el.snippet.title;
-                    let description = el.snippet.description;
-                    let duration = el.contentDetails.duration;
-
-                    // 轉時間格式
-                    let formatDuration = this.durationHandler(duration);
-
-                    let video = {
-                        id,
-                        img,
-                        title,
-                        cut_title: title.substr(1,10)+"...",
-                        description: description.substr(1,20)+"...",
-                        formatDuration
-                    }
-
-                    this.videos.push(video)
-                    this.pagePlaylist = this.videos.slice(this.playStartIndex, this.playStartIndex+12)
-                });
-
-                $(".pagination").css("display","flex")
-
-                // console.log(this.playStartIndex)
-                // console.log(this.pagePlaylist)           
-            })
-
-        },
-
-        // 把要的屬性整理成一個影片一個物件
-        // 每種屬性都一個陣列
-        setResponseCountry(country){
-            country.forEach((el,i,arr) => {
+            playlist.forEach((el,i,arr) => {
                 let id = el.id;
                 let img = el.snippet.thumbnails.high.url;
                 let title = el.snippet.title;
@@ -193,19 +107,107 @@ export default {
                 // 轉時間格式
                 let formatDuration = this.durationHandler(duration);
 
-                this.videos.push({
+                let video = {
                     id,
                     img,
                     title,
-                    cut_title: title.substr(1,20)+"...",
-                    description: description.substr(1,30)+"...",
+                    cut_title: title.substr(0,10)+"...",
+                    description: description.substr(0,20)+"...",
                     formatDuration
-                })
-            });
+                }
 
+                this.videos.push(video)
+
+                this.slicePagelist();
+            });
         },
 
-        // 轉時間的格式
+        // 取得第一次 12筆資料，
+        // 第二次之後，因為要傳入 nextPageToken，
+        // 所以在 gotoNextpage() 串接不同 API
+        getFirstVideos(){
+            const api = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&chart=mostPopular&maxResults=12&regionCode=TW&key=AIzaSyAEHw6lAxMOQ4YcogbbAkeWza_hxARrk4k'
+
+            this.$http.get(api).then((res)=>{
+                console.log(res);
+
+                if(res.status == 200){
+                    let playlist = res.data.items;
+                    let pageInfo = res.data.pageInfo;
+
+                    // 存下一頁提供 nextPage() 使用
+                    this.pages.nextPageToken = res.data.nextPageToken;  
+                    this.pages.currentPage = 1;
+                    this.getPlaylist(playlist);  // 取得波放清單
+                    $(".pagination").css("display","flex");  // 取完資料再顯示
+                }
+            })
+        },
+
+        gotoPage(page){
+            this.pages.currentPage = page;
+            console.log("pages.currentPage: " + this.pages.currentPage)
+            console.log("totalPage: "+this.pages.totalPage)
+
+            this.nowPlayStartIndex = (this.pages.currentPage-1)*this.pages.perPage_num;
+            console.log(this.nowPlayStartIndex)
+
+            // 取得當下第幾頁  (12*0,12*1)
+            this.slicePagelist();
+        },
+
+        gotoNextpage(nextPageToken){
+            // 總頁數 = 100筆資料 / 一頁 12筆 = 9
+            let finalTotalPage = Math.ceil(this.totalResults / this.pages.perPage_num)
+
+            if(this.pages.currentPage == finalTotalPage){
+                return
+            }
+
+            // 如果已經有下一頁，就不用向後端取得新的一批 12 筆資料
+            // 目前資料數 > 當前頁 * 一頁 12 筆
+            if(this.videos.length > this.pages.currentPage*this.pages.perPage_num){
+                this.pages.currentPage ++;
+                this.nowPlayStartIndex +=12;
+                this.pages.totalPage = Math.ceil(this.videos.length / this.pages.perPage_num)
+
+                this.slicePagelist();         
+
+            } else {
+                // 如果超過100筆資料，就最多取  100 - 當下資料數 筆資料
+                let maxResults = 12;
+                if(this.videos.length + maxResults > 100){
+                    maxResults = 100 - this.videos.length
+                }
+
+                let nextPageApi=`https://www.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&chart=mostPopular&maxResults=${maxResults}&pageToken=${nextPageToken}&regionCode=TW&key=AIzaSyAEHw6lAxMOQ4YcogbbAkeWza_hxARrk4k`
+
+                this.$http.get(nextPageApi).then((res)=>{
+                    // console.log(res)
+                    if(res.status == 200){
+
+                        this.pages.currentPage ++;
+                        this.nowPlayStartIndex +=12;  // 往後 12 筆開始裝下一頁資料
+
+                        let playlist = res.data.items;
+                        this.getPlaylist(playlist);
+
+                        // 下一頁資料的頁數 id
+                        this.pages.nextPageToken = res.data.nextPageToken;
+
+                        this.pages.totalPage = Math.ceil(this.videos.length / this.pages.perPage_num)
+                    } 
+                })
+            }
+        },
+
+        previouspage(){
+            this.pages.currentPage --;
+            this.nowPlayStartIndex -=12;
+            this.slicePagelist();
+        },
+
+        // 轉時間的格式 "PT1H45M15S" => "1:45:15"
         durationHandler(duration){
             let hours = 0;
             let minutes = 0;
@@ -221,7 +223,6 @@ export default {
                 hours = 0
             }
 
-
             if(duration.indexOf("M")>-1){
                 let minutes_split = duration.split('M');
                 minutes = minutes_split[0]
@@ -235,18 +236,6 @@ export default {
 
             duration = `${hours}:${minutes}:${seconds}`
             return duration
-        }
-    },
-    created() {
-        console.log("created")
-
-        this.getVideos();
-    },
-    mounted() {
-        if(this.temp_total_page == 2){
-            let nextPageBtn = document.querySelector(".nextPage");
-            nextPageBtn.classList.add("disabled");
-            return
         }
     },
 }
@@ -291,27 +280,26 @@ export default {
 
     // =================================
 
-    // *{
-    //     border: 1px solid red;
-    // }
-
     .pagination {
-        // display: none;
         display: none;
         justify-content: center;
+        margin-top: 30px;
         
         .page_btn{
             display: block;
             cursor: pointer;
             padding: 3px 7px;
             margin: 0 3px;
-            // border: 1px solid black;
-            background-color:  rgb(101, 115, 138);
+            background-color: rgb(61, 63, 95);
             transition: 0.2s;
             color: white;
             &:hover{
-                background-color: rgb(138, 151, 173);
+                background-color:  rgb(0, 230, 238);
             }
+        }
+
+        .active {
+            background-color:  rgb(0, 230, 238);
         }
 
         .disabled{
@@ -326,12 +314,9 @@ export default {
     .playlists{
         display: flex;
         flex-wrap: wrap;
-        // flex-grow: 1 1 1;
         justify-content: space-evenly;
-        
         width: 80vw;
-        margin: 0 auto;
-        // position: relative;
+        margin: 50px auto 0 auto;
 
         @include pad() {
             width: 90vw;
