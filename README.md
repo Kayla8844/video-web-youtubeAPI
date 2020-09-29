@@ -1,4 +1,4 @@
-# 用 youtube API 做影音網站
+# 用 youtube API 做影音網站(未完成)
 
 [demo](https://kayla8844.github.io/video-web-youtube-api-output/)
 
