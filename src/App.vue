@@ -92,7 +92,7 @@ export default {
       margin: 0 15px 0 0;
       #film_logo {
         display: block;
-        color: rgb(0, 230, 238);
+        color: rgb(0, 189,226);
         font-size: 16px;
         margin-left: 5px;
         position: relative;
@@ -110,10 +110,11 @@ export default {
     display: flex;
     
     .search_bar {
+      color: white;
       width: 20vw;
       height: 28px;
       background-color: transparent;
-      border: 1px solid   rgb(0, 230, 238);
+      border: 1px solid  rgb(0 , 189, 226);
       padding: 10px 7px;
     }
     #search_icon{
@@ -121,12 +122,12 @@ export default {
       height: 28px;
       padding: 7px;
       display: block;
-      background-color: rgb(58, 248, 255);
+      background-color: rgb(0, 189,226);
     }
     .like{
       height: 28px;
       margin-left: 20px;
-      background-color: rgb(250, 200, 0);
+      background-color: #ffc800;
       padding: 5px 10px;
       font-weight: bold;
     }

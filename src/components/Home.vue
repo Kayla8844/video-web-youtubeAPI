@@ -2,58 +2,73 @@
     <div>
         <!-- 播放清單 -->
         <div class="playlists">
-            <div class="playlist" v-for="video in pagePlaylist" :key="video.id" >
-                <div class="thumbnail_and_howlong_area">
-                    <a @click="gotoPlay(video.id)">
+            <div class="playlist" v-for="(video) in pagePlaylist" :key="video.id" >
+                <div class="thumbnail_area">
+                    <a @click="gotoPlay(video.id)" >
+                        <div class="thumbnail_overlay">
+                            ▷
+                        </div>
                         <img :src="video.img" class="thumbnail" alt="無法顯示">
                         <span class="howlong">{{ video.formatDuration }}</span>
                     </a>
                 </div>
                 
-                <router-link to="/play" :title="video.title" class="title">
-                    {{ video.cut_title }}
+                <router-link to="/play" :title="video.title" class="video_title">
+                    {{ video.title }}
                 </router-link>
 
-                <p class="description">{{ video.description }}</p>
+                <!-- <p class="description">{{ video.description }}</p> -->
             </div>
         </div>
 
-        <div class="pagination">
-            <a 
-                class="page_btn firstPage" 
-                @click="gotoPage(1)">
-                First
-            </a>
-            <a 
-                class="page_btn previous_page"
-                @click="previouspage()">
-                &lt;&lt;
-            </a>
-            <a
-                class="page_btn gotopage"
-                v-for="page in pages.totalPage" 
-                :class="{'active': page == pages.currentPage}"
-                :key="page"
-                @click="gotoPage(page)">
-                {{ page }}
-            </a>
-            <a 
-                class="page_btn nextPage" 
-                :class="{'disabled': this.pages.totalPage == 9}" 
-                @click="gotoNextpage(pages.nextPageToken)">
-                >>
-            </a>
-            <a 
-                class="page_btn lastPage" 
-                @click="gotoPage(pages.totalPage)">
-                Last
-            </a>
+        <div class="pagination" v-if="pages.page_display">
+            <div class="page_area">
+                <a 
+                    class="page_btn firstPage" 
+                    :class="{'disabled': this.pages.currentPage == 1}" 
+                    @click="gotoPage(1)">
+                    First
+                </a>
+                <a 
+                    class="page_btn previous_page"
+                    v-if="this.pages.currentPage > 1"
+                    @click="previouspage()">
+                    &lt;&lt;
+                </a>
+                <a
+                    class="page_btn gotopage"
+                    v-for="page in pages.totalPage" 
+                    :class="{'active': page == pages.currentPage}"
+                    :key="page"
+                    @click="gotoPage(page)">
+                    {{ page }}
+                </a>
+                <a 
+                    class="page_btn nextPage" 
+                    v-if="this.pages.currentPage < this.finalTotalPage"
+                    @click="gotoNextpage(pages.nextPageToken)">
+                    >>
+                </a>
+                <a 
+                    class="page_btn lastPage" 
+                    :class="{'disabled': this.pages.currentPage == this.finalTotalPage}" 
+                    @click="gotoPage(pages.totalPage)">
+                    Last
+                </a>
+            </div>
+            
+            <div class="page_explain">
+                <p>按下一頁會產生新的一頁<br>
+                    參數 nextPageToken<br>
+                    每次拿12筆，共 100 筆
+                </p>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import $ from 'jquery';
+// import $ from 'jquery';
 
 export default {
     data() {
@@ -70,6 +85,8 @@ export default {
 
                 totalPage: 1, 
                 // 按了下一頁才會產生新的總頁數 第 12/1 頁, 24/2,36/3..
+
+                page_display: false,
             }
         }
     },
@@ -80,6 +97,11 @@ export default {
     },
 
     computed: {
+        // 總頁數 = 100筆資料 / 一頁 12筆 = 9
+        finalTotalPage(){
+            return Math.ceil(this.totalResults / this.pages.perPage_num)
+        }
+        
     },
 
     methods: {
@@ -139,7 +161,8 @@ export default {
                     this.pages.nextPageToken = res.data.nextPageToken;  
                     this.pages.currentPage = 1;
                     this.getPlaylist(playlist);  // 取得波放清單
-                    $(".pagination").css("display","flex");  // 取完資料再顯示
+                    this.pages.page_display = true;
+                    // $(".pagination").css("display","flex");  // 取完資料再顯示
                 }
             })
         },
@@ -157,10 +180,10 @@ export default {
         },
 
         gotoNextpage(nextPageToken){
+            // finalTotalPage=
             // 總頁數 = 100筆資料 / 一頁 12筆 = 9
-            let finalTotalPage = Math.ceil(this.totalResults / this.pages.perPage_num)
 
-            if(this.pages.currentPage == finalTotalPage){
+            if(this.pages.currentPage == this.finalTotalPage){
                 return
             }
 
@@ -236,7 +259,7 @@ export default {
 
             duration = `${hours}:${minutes}:${seconds}`
             return duration
-        }
+        },
     },
 }
 </script>
@@ -280,36 +303,48 @@ export default {
 
     // =================================
 
-    .pagination {
-        display: none;
-        justify-content: center;
-        margin-top: 30px;
-        
-        .page_btn{
-            display: block;
-            cursor: pointer;
-            padding: 3px 7px;
-            margin: 0 3px;
-            background-color: rgb(61, 63, 95);
-            transition: 0.2s;
-            color: white;
-            &:hover{
-                background-color:  rgb(0, 230, 238);
+    .pagination{
+        .page_area {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0 10px 0;
+            
+            .page_btn{
+                display: block;
+                cursor: pointer;
+                padding: 3px 7px;
+                margin: 0 3px;
+                background-color: rgb(61, 63, 95);
+                transition: 0.2s;
+                color: white;
+                &:hover{
+                    background-color:  rgb(0, 189, 226);
+                }
             }
+
+            .active {
+                background-color:  rgb(0, 189, 226);
+            }
+
+            .disabled{
+                background-color:  rgb(0, 189, 226);
+                cursor: auto;
+                &:hover{
+                    background-color:   rgb(0, 189, 226);
+                }
+            }
+            
         }
 
-        .active {
-            background-color:  rgb(0, 230, 238);
-        }
-
-        .disabled{
-            background-color:  rgb(212, 212, 212);
-            &:hover{
-                background-color:  rgb(212, 212, 212);
+        .page_explain {
+            text-align: center;
+            margin: 20px 0;
+            p{
+                margin: 0;
             }
         }
-        
     }
+    
     
     .playlists{
         display: flex;
@@ -325,6 +360,8 @@ export default {
         .playlist{
             width:22%;
             position: relative;
+            cursor: pointer;
+            margin: 10px 0 20px  0;
             @include pad() {
                 width: 30%;
             }
@@ -340,7 +377,34 @@ export default {
                 position: relative;
             }
             
-            .thumbnail_and_howlong_area{
+            .thumbnail_area{
+                position: relative;
+
+                .display{
+                    display: block;
+                    transition: all 2s;
+                }
+
+                .thumbnail_overlay{
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 36px;
+                    color: rgb(0, 189, 226);
+                    opacity: 0;
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.7);
+                    transition: 0.2s ease;
+                    // position: relative;
+                    &:hover{
+                        opacity: 1;
+                    }
+
+                    
+                }
+
                 .thumbnail {
                     display: block;
                     width: 100%;
@@ -359,8 +423,9 @@ export default {
                 }
             }
             
-            .description {
-                text-align: left;
+            .video_title{
+                margin-top: 15px;
+                color: rgb(235, 235, 235);
             }
         }
     }
